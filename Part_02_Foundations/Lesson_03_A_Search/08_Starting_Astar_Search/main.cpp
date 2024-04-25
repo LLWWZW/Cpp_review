@@ -69,10 +69,16 @@ Search( grid, initial_point, goal_point ) :
 
     5.If you exit the while loop because the list of open nodes is empty, you have run out of new nodes to explore and haven't found a path.
 */
+
+int Heuristic(int x1, int y1, int x2, int y2)
+{
+    return abs(x2 - x1) + abs(y2 - y1);
+}
+
 std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid, int initial_point[2], int goal_point[2])
 {
     std::cout << "No path found!" << std::endl;
-    return;
+    return std::vector<std::vector<State>>{};
 }
 
 std::string CellString(State cell)
