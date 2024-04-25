@@ -74,3 +74,35 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid, int
     std::cout << "No path found!" << std::endl;
     return;
 }
+
+std::string CellString(State cell)
+{
+    switch (cell)
+    {
+    case State::kObstacle:
+        return "â›°ï¸   ";
+    default:
+        return "0   ";
+    }
+}
+
+void PrintBoard(const std::vector<std::vector<State>> board)
+{
+    for (int i = 0; i < board.size(); i++)
+    {
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            std::cout << CellString(board[i][j]);
+        }
+        std::cout << "\n";
+    }
+}
+
+int main()
+{
+    int init_point[2]{0, 0};
+    int goal_point[2]{4, 5};
+    auto board = ReadBoardFile("C:/Users/zhoul/OneDrive/Desktop/uda_cpp/Cpp_review/27_Formatting_the_Printed_Board/1.board");
+    auto solution = Search(board, init_point, goal_point);
+    PrintBoard(solution);
+}
