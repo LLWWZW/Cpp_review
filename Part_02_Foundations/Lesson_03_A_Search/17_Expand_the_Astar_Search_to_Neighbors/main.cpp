@@ -7,11 +7,15 @@
 
 enum class State
 {
+    kStart,
+    KFinish,
     kEmpty,
     kObstacle,
     kClosed,
     kPath
 };
+
+const int delta[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 
 std::vector<State> ParseLine(std::string line)
 {
@@ -117,6 +121,34 @@ bool CheckValidCell(int x, int y, std::vector<std::vector<State>> &grid)
     return false;
 }
 
+void ExpandNeighbors(std::vector<int> &current_node, int *goal, std::vector<std::vector<int>> &openlist, std::vector<std::vector<State>> &grid)
+{
+    int curx = current_node[0];
+    int cury = current_node[1];
+    int curg = current_node[2];
+    int curh = current_node[3];
+    int newg = curg + 1;
+    std::cout << __func__ << ", cru x:" << curx << ", cur y:" << cury << "\n";
+
+    for (int i = 0; i < 4; i++)
+    {
+
+        int poetential_x = curx + delta[i][0];
+        int poetential_y = cury + delta[i][1];
+
+        // Check that the potential neighbor's x2 and y2 values are on the grid and not closed.
+        //  if the point is State::kEmpty (which means not kObstcal, kPath)
+        if (CheckValidCell(poetential_x, poetential_y, grid))
+        {
+            // Increment g value, compute h value, and add neighbor to open list
+            // for future use.
+            int newh = Heuristic(poetential_x, poetential_y, goal[0], goal[1]);
+            std::cout << poetential_x << poetential_y << goal[0] << goal[1] << newg << newh << "\n";
+            AddToOpen(poetential_x, poetential_y, newg, newh, openlist, grid);
+        }
+    }
+}
+
 std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
                                        int initial_point[2], int goal_point[2])
 {
@@ -128,6 +160,22 @@ std::vector<std::vector<State>> Search(std::vector<std::vector<State>> grid,
     int h = Heuristic(x, y, goal_point[0], goal_point[1]);
     AddToOpen(x, y, g, h, open, grid); // add x,y,g,h (state) into OPEN LIST;
 
+    while (open.size() > 0)
+    {
+        CellSort(&open);
+        std::vector<int> current = open.back();
+        open.pop_back();
+        x = current[0];
+        y = current[1];
+        grid[x][y] = State::kPath;
+        if (x == goal_point[0] && y == goal_point[1])
+        {
+            grid[initial_point[0]][initial_point[1]] = State::kStart;
+            grid[goal_point[0]][goal_point[1]] = State::KFinish;
+            return grid;
+        }
+        ExpandNeighbors(current, goal_point, open, grid);
+    }
     std::cout << "No path found!" << std::endl;
     return std::vector<std::vector<State>>{};
 }
@@ -138,8 +186,20 @@ std::string CellString(State cell)
     {
     case State::kObstacle:
         return "â›°ï¸   ";
+    case State::kPath:
+        return "ðŸš—   ";
+    case State::kEmpty:
+        return "E   ";
+    case State::kClosed:
+        return "C   ";
+    case State::kStart:
+        return "ðŸš¦   ";
+    case State::KFinish:
+        return "ðŸ   ";
     default:
-        return "0   ";
+        return "?   ";
+        // TODO: Add cases to return "ðŸš¦   " for kStart
+        // and "ðŸ   " for kFinish.
     }
 }
 
@@ -159,7 +219,7 @@ int main()
 {
     int init_point[2]{0, 0};
     int goal_point[2]{4, 5};
-    auto board = ReadBoardFile("C:/Users/zhoul/OneDrive/Desktop/uda_cpp/Cpp_review/27_Formatting_the_Printed_Board/1.board");
+    auto board = ReadBoardFile("C:/Users/zhoul/OneDrive/Desktop/uda_cpp/Cpp_review/Part_02_Foundations/Lesson_03_A_Search/08_Starting_Astar_Search/1.board");
     auto solution = Search(board, init_point, goal_point);
     PrintBoard(solution);
 }
